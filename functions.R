@@ -13,21 +13,13 @@ addDatePNI = function(shape,comunas, date_lab){
   return(shape)
 }
 
-library(dplyr)
-suppressWarnings({
-  # library(googledrive)
-  # drive_auth(path = Sys.getenv("GGDRIVE_json"))
-  
-  library(googlesheets4)
-  sheets_auth_configure(api_key = Sys.getenv("GGDRIVE_key"))
-  sheets_deauth()
-})
 
 load_data_dict = function(book=NULL,sheet=NULL){
   if(is.null(book) || is.null(book)){
     return(print("Define book or sheet!"))
   }
   
+  library(googlesheets4)
   sheets_auth_configure(api_key = Sys.getenv("GGDRIVE_key"))
   sheets_deauth()
   

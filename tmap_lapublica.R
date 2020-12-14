@@ -25,14 +25,15 @@ sheet = "TOTALES (CALCULADOS POR LA PÚBLICA)"
 book = "https://docs.google.com/spreadsheets/d/10ZiHU3YUueuR3XBcUGNywfzJEpXKsUOy211uBYDCnqk/edit?usp=sharing"
 sheet = "Map"
 
-Publica = suppressMessages(load_data_dict(book = book,sheet=sheet))
+# Load La Publica Data
+Publica = load_data_dict(book = book,sheet=sheet)
 
 colnames(Publica)
 summary(Publica)
 
 # https://arbor-analytics.com/post/making-animated-gif-maps-in-r-visualizing-ten-years-of-emerald-ash-borer-spread-in-minnesota/
 
-shape = st_read("/home/tarto/Documents/GIS/Comunas/comunas_lapublica.geojson")
+shape = st_read("shape/comunas_lapublica.geojson")
 # st_transform(stgo, "+init=epsg:3857")
 
 Publica$Comuna
@@ -49,18 +50,14 @@ if(Region == "RM"){
   Publica$Sum = rowSums(Publica[,colnames(Publica)[2:27]])
   comunas=Publica$Comuna[1:10] 
   reg_label = "Región de La Araucanía"
-}else if(Region == "IX"){
+}else if(Region == "XIII"){
+  # Not run
   # Publica$Sum = rowSums(Publica[,colnames(Publica)[2:27]])
   # comunas=Publica$Comuna[1:10] 
-  reg_label = "Región del Bío-Bío"
+  # reg_label = "Región del Bío-Bío"
+  shape %>%  filter(Region == reg_label) %>% select(Comuna) %>% as.data.frame() %>% select(Comuna) %>% write.csv("Biobio_comunas.csv")
 }
 
-shape %>%  filter(Region == reg_label) %>% select(Comuna) %>% as.data.frame() %>% select(Comuna) %>% write.csv("Biobio_comunas.csv")
-
-# # Create centroid for visualization GGPLOT
-# Comunas <- st_centroid(shape) %>% na.omit()
-# Comunas$lng = st_coordinates(Comunas)[,1]
-# Comunas$lat = st_coordinates(Comunas)[,2]
 
 ## ADD PNI to shapefile ####
 colnames(Publica)
@@ -146,119 +143,5 @@ for(ee in 1:length(date_lab_reg)){
 
 
 
-# hist(shape_PNI$PNI)
-# plot(shape_PNI$PNI)
 
-# library(jamba)
-# library(RColorBrewer)
-# brewer.pal(11, "YlOrRd")
-# 
-# colores = jamba::color2gradient(list(Greens=c("green"),
-#                                      Yellow = c("yellow"), 
-#                                      Reds=c("red")), n=c(3,3,3));
-# values = showColors(colores)
-
-# colores = c("#5CFF5CFF","#36E036FF","#00A300FF",
-#             "#FFFF5CFF","#F0F048FF","#D1D126FF",
-#             "#FF5C5CFF","#E03636FF","#C21717FF","#A30000FF")
-# 
-# length(colores)
-
-# 
-# if(Region = "RM"){
-#   break_sum = seq(0,1200,by=120)
-#   length(break_sum)
-#   breaks = seq(0,50,by=5)
-# }else if(Region = "IX"){
-#   # break_sum = seq(0,1200,by=120)
-#   # length(break_sum)
-#   # For sum
-#   breaks = seq(25,max(shape_PNI$PNI)+15,by=20);length(breaks)
-#   # For Date
-#   breaks = seq(0,max(shape_PNI$PNI)+2,by=1.5);length(breaks)
-#   (length(breaks)==(length(colores)+1))
-# }
-
-# breaks = break_sum
-
-# plot(shape_PNI["PNI"] , key.pos = 1,axes = TRUE, 
-#      key.width = lcm(1.5), key.length = 1.0,
-#      nbreaks = 10,pal = colores,
-#      breaks = breaks,
-#      at = breaks)
-# plot(shape_PNI["Comuna"])
-
-
-
-
-
-
-# open the file
-filename = paste0(Region,"_test_sum.png")
-png(filename = filename, w = 5, h = 7, units = "in", res = 150)
-plot(shape["PNI"] , key.pos = 1,axes = TRUE, 
-     key.width = lcm(1.5), key.length = 1.0,
-     nbreaks = 10,pal = colores,
-     breaks = breaks,
-     at = breaks)
-# close the png file
-dev.off()
-
-# library(RgoogleMaps)
-# # define Lat and Lon
-# 
-# Lat <- c(-33.4,-33.5)
-# Long <- c(-70.5,-70.8)
-# # get the map tiles 
-# # you will need to be online
-# MyMap <- MapBackground(lat=Lat, lon=Long, maptype = "satellite",zoom = 10)
-# PlotOnStaticMap(MyMap)
-
-
-library(tmap)
-
-filename = paste0(Region,"_test_tmap_classic_sum.png")
-png(filename = filename, w = 5, h = 7, units = "in", res = 150)
-qtm(shape["PNI"], fill = "red", style = "natural")
-
-qtm(shape, fill="PNI", text="Comuna", text.size=0.5, 
-    format="World_wide", style="classic", 
-    text.root=5, fill.title="PNI")
-
-dev.off()
-
-filename = paste0(Region,"_test_tmap_sum.png")
-png(filename = filename, w = 5, h = 7, units = "in", res = 150)
-
-tm_shape(shape) +
-  tm_polygons("PNI", title = "2020-30-01", palette = colores, 
-              breaks = breaks, 
-              legend.hist = T) +
-  tm_scale_bar(width = 0.12,position = c(0.05, 0.5)) +
-  tm_compass(position = c(0.05, 0.6)) +
-  tm_layout(frame = F, 
-            title.size = 2, 
-            title.position = c(0.55, "top"), 
-            legend.outside = T,legend.stack = "vertical",
-            legend.hist.size = 0.9,legend.hist.width = 1)
-
-# close the png file
-dev.off()
-
-
-library(ggplot2)
-library(maps)
-library(ggthemes)
-
-world <- ggplot() +
-  borders("world", colour = "gray85", fill = "gray80") +
-  theme_map() 
-
-map <- world +
-  geom_point(aes(x = lon, y = lat, size = followers),
-             data = rladies, 
-             colour = 'purple', alpha = .5) +
-  scale_size_continuous(range = c(1, 8), 
-                        breaks = c(250, 500, 750, 1000)) +
-  labs(size = 'Followers')
 

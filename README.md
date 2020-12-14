@@ -1,18 +1,29 @@
 # LaPublicaMap
 
 ## Intro
-This repo was created to give a hand to [LaPublica](https://lapublica.cl/) in order to visualize the chilean police forecement displacement during the [Oct 2019-2020 Protest](https://en.wikipedia.org/wiki/2019%E2%80%9320_Chilean_protests)
+This repo was created to give a hand to [LaPublica](https://lapublica.cl/) in order to visualize the Chilean police forcement displacement during the [Oct 2019-2020 Protest](https://en.wikipedia.org/wiki/2019%E2%80%9320_Chilean_protests)
 
 ![Front Page](img/logoLapublica.png?raw=true "Pagina web")
 
 ## How this repo works
-### R code to create a story telling of the number of police in each commune 
-
-![Ix Region](IX_map.gif)
-
 
 ## Main Script
-> tmap_lapublic.R
+Code to create a story telling of the number of police in each commune
+
+ > tmap_lapublic.R
 
 ## Video deployer
-> gifTer.R
+Grab the .png files and use the amazing {av} packages to create a video
+ > gifTer.R
+
+![Ix Region](IX_map.gif)
+et voala!
+
+## To run you use **GGDRIVE_key** variable
+
+create a *.Renviron* or set up by the following code:
+ > Sys.setenv(GGDRIVE_key="xxxxxx_google_code")
+ 
+ - [Further reading](https://googlesheets4.tidyverse.org/)
+
+
