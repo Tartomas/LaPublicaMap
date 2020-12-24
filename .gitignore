@@ -41,3 +41,4 @@ vignettes/*.pdf
 img/*.png
 img/*.mp4
 img/IX/*.png
+tmp/

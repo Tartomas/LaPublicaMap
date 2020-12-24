@@ -16,6 +16,7 @@
 
 library(av)
 
+
 files = list.files(path = "IX/",pattern = ".png",full.names = T)
 av::av_encode_video(input = files, 
                     framerate = 1, output = "GG1.mp4")

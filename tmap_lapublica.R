@@ -4,7 +4,9 @@ theme_set(theme_bw())
 library(sf)
 library(dplyr)
 library(sf)
-
+library(tidyverse)
+library(ggrepel)
+library(gganimate)
 ## https://tmieno2.github.io/R-as-GIS-for-Economists/color-scale.html
 
 library(ggspatial)
@@ -19,7 +21,7 @@ Region = "IX"
 
 ## RM ##
 book = "https://docs.google.com/spreadsheets/d/16qjbB6rneQHqI0t-sQj9J97jOqXXRFXwU5CSXVcfYLI/edit?usp=sharing"
-sheet = "TOTALES (CALCULADOS POR LA PÚBLICA)"
+sheet = "Map"
 
 # Araucania
 book = "https://docs.google.com/spreadsheets/d/10ZiHU3YUueuR3XBcUGNywfzJEpXKsUOy211uBYDCnqk/edit?usp=sharing"
@@ -38,17 +40,28 @@ shape = st_read("shape/comunas_lapublica.geojson")
 
 Publica$Comuna
 shape$Comuna
-
 colnames(Publica)
 
+##### Sum Data per comune and date ####
+dim_row = dim(Publica)[1]
+dim_col = dim(Publica)[2]
+
+Publica$Sum = rowSums(Publica[,colnames(Publica)[2:dim_col]],na.rm = T)
+Sum_date = colSums(Publica[,colnames(Publica)[2:dim_col]],na.rm = T)
+
+Publica = rbind(Publica,c(Comuna = "Total",Sum_date))
+
+
+#### GIF MAP ####
+comunas=Publica$Comuna[1:dim_row] 
+
 if(Region == "RM"){
-  Publica$`23/10` = as.numeric(unlist(Publica$`23/10`))  
-  Publica$Sum = rowSums(Publica[,colnames(Publica)[4:29]])
+  # Publica$`23/10` = as.numeric(unlist(Publica$`23/10`))  
+  # Publica$Sum = rowSums(Publica[,colnames(Publica)[4:29]])
   #comunas=Publica$Comuna[1:] 
   reg_label = "Región Metropolitana de Santiago"
 }else if(Region == "IX"){
-  Publica$Sum = rowSums(Publica[,colnames(Publica)[2:27]])
-  comunas=Publica$Comuna[1:10] 
+
   reg_label = "Región de La Araucanía"
 }else if(Region == "XIII"){
   # Not run
@@ -58,15 +71,12 @@ if(Region == "RM"){
   shape %>%  filter(Region == reg_label) %>% select(Comuna) %>% as.data.frame() %>% select(Comuna) %>% write.csv("Biobio_comunas.csv")
 }
 
-
 ## ADD PNI to shapefile ####
 colnames(Publica)
 
 date_lab = "18/10"
-date_lab_reg = colnames(Publica)[2:27]
+date_lab_reg = colnames(Publica)[2:dim_col]
 
-library(tidyverse)
-library(ggrepel)
 
 for(ee in 1:length(date_lab_reg)){
   
@@ -75,6 +85,7 @@ for(ee in 1:length(date_lab_reg)){
   shape_PNI = shape_PNI %>% 
     filter(Region == reg_label) %>% 
     mutate(
+      PNI = as.numeric(PNI),
       CENTROID = map(geometry, st_centroid),
       COORDS = map(CENTROID, st_coordinates),
       COORDS_X = map_dbl(COORDS, 1),
@@ -109,7 +120,8 @@ for(ee in 1:length(date_lab_reg)){
     geom_sf(data = shape_PNI,aes(fill = PNI)) +
     # theme_void() +
     scale_fill_distiller(name="N°",palette = "RdYlGn",guide = "colourbar", na.value = "grey",
-                         breaks=seq_breaks,labels=seq_labels,limits = c(0, 20))+
+                         breaks=seq_breaks,labels=seq_labels,
+                         limits = c(0, 20))+
     geom_text_repel(
       mapping = aes(
         x = COORDS_X,
@@ -136,12 +148,17 @@ for(ee in 1:length(date_lab_reg)){
           panel.background = element_rect(fill = "transparent"))
   # ggmap
   dategg = as.Date(paste0(date_lab,"/2019"),format = "%d/%m/%Y")
-  filename = paste0(Region,"_",gsub("/","_",dategg),"_frame1.png")
+  if(!dir.exists("tmp")){
+    dir.create("tmp")
+  }
+  
+  if(!dir.exists(paste0("tmp/",Region))){
+    dir.create(paste0("tmp/",Region))
+  }
+  
+  filename = paste0("tmp/",Region,"_",gsub("/","_",dategg),"_frame1.png")
   ggsave(ggmap,filename = filename,width = 8,height = 7,device = "png", bg = "transparent")
   
 }
 
-
-
-
-
+create_video(region = Region)

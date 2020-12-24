@@ -20,10 +20,20 @@ load_data_dict = function(book=NULL,sheet=NULL){
   }
   
   library(googlesheets4)
-  sheets_auth_configure(api_key = Sys.getenv("GGDRIVE_key"))
-  sheets_deauth()
+  gs4_auth_configure(api_key = Sys.getenv("GGDRIVE_key"))
+  gs4_deauth()
   
   sheetdata = read_sheet(ss = book, 
                          sheet = sheet)
   return(sheetdata)
+}
+
+
+create_video = function(region){
+  
+  files = list.files(path = "tmp",pattern = ".png",full.names = T)
+  files = grep(pattern = region,files,value=T)
+  
+  av::av_encode_video(input = files, 
+                      framerate = 1, output = paste0("tmp/",region,".mp4"))
 }
